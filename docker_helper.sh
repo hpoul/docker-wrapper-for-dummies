@@ -15,6 +15,17 @@ if test -z "$cmd" || test -z "$3" ; then
 	exit 1
 fi
 
+if ! test -f ~/.docker/config.json ; then
+	mkdir -p ~/.docker
+	# I REALLY want to use ctrl+p in bash.
+	# (my best idea was ctrl-i -- YMMV)
+	cat >>EOF>~/.docker/config.json
+{
+	"detachKeys": "ctrl-i,i"
+}
+EOF
+fi
+
 function find_container() {
 	filter_=("$@")
 	filter=""
