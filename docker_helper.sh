@@ -10,8 +10,10 @@ normal=$(tput sgr0)
 
 cmd=${1:-}
 
-if test -z "$cmd" || test -z "$3" ; then
-	echo "Usage: $0 {exec|runclone} <name> <command>"
+if test -z "$cmd" || test -z "${2:-}" ; then
+	echo "Usage: $0 {exec|runclone|logs} <name filter> <command>"
+	echo
+	echo "   <name filter>: Every word has to match by name"
 	exit 1
 fi
 
@@ -19,7 +21,7 @@ if ! test -f ~/.docker/config.json ; then
 	mkdir -p ~/.docker
 	# I REALLY want to use ctrl+p in bash.
 	# (my best idea was ctrl-i -- YMMV)
-	cat >>EOF>~/.docker/config.json
+	cat<<EOF>~/.docker/config.json
 {
 	"detachKeys": "ctrl-i,i"
 }
@@ -49,7 +51,7 @@ function find_container() {
 }
 
 filter=$2
-command=$3
+command=${3:-}
 if ! test -z "${4:-}" ; then
 	echo "Unsupported 4th parameter $4"
 	exit 1
@@ -66,5 +68,10 @@ elif test "$cmd" = "runclone" ; then
 	echo "${bold}${bluebg}Okay, running $image in network of $id"
 	echo "Mounting `pwd` into /pwd${normal}"
 	docker run --rm -it -v "`pwd`:/pwd" --network="container:$id" $image $command
+elif test "$cmd" = "logs" ; then
+	id=$(find_container $filter)
+	shift
+	shift
+	docker logs $id $@
 fi
 
